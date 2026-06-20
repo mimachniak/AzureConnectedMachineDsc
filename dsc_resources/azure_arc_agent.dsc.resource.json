@@ -1,0 +1,146 @@
+{
+    "$schema": "https://aka.ms/dsc/schemas/v3/bundled/resource/manifest.json",
+    "type": "Microsoft.Azure.Arc/AgentConfiguration",
+    "description": "Configure Azure Arc Connected Machine agent local settings.",
+    "tags": [
+        "Windows",
+        "Azure",
+        "Arc"
+    ],
+    "version": "0.1.0",
+    "get": {
+        "executable": "pwsh",
+        "args": [
+            "-NoLogo",
+            "-NonInteractive",
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-Command",
+            "$input | ./azure_arc_agent.resource.ps1",
+            "get"
+        ],
+        "input": "stdin"
+    },
+    "set": {
+        "executable": "pwsh",
+        "args": [
+            "-NoLogo",
+            "-NonInteractive",
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-Command",
+            "$input | ./azure_arc_agent.resource.ps1",
+            "set"
+        ],
+        "implementsPretest": true,
+        "input": "stdin",
+        "return": "state",
+        "requireSecurityContext": "elevated"
+    },
+    "test": {
+        "executable": "pwsh",
+        "args": [
+            "-NoLogo",
+            "-NonInteractive",
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-Command",
+            "$input | ./azure_arc_agent.resource.ps1",
+            "test"
+        ],
+        "input": "stdin",
+        "return": "state"
+    },
+    "export": {
+        "executable": "pwsh",
+        "args": [
+            "-NoLogo",
+            "-NonInteractive",
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-Command",
+            "$input | ./azure_arc_agent.resource.ps1",
+            "export"
+        ],
+        "input": "stdin"
+    },
+    "exitCodes": {
+        "0": "Success",
+        "1": "Resource execution failed"
+    },
+    "schema": {
+        "embedded": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "incomingConnectionsEnabled": {
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "guestConfigurationEnabled": {
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "extensionsEnabled": {
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "extensionAllowlist": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "extensionBlocklist": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "configMode": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "proxyUrl": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "agentInstalled": {
+                    "type": [
+                        "boolean",
+                        "null"
+                    ],
+                    "readOnly": true
+                },
+                "_inDesiredState": {
+                    "type": [
+                        "boolean",
+                        "null"
+                    ],
+                    "readOnly": true
+                }
+            }
+        }
+    }
+}
