@@ -1,4 +1,4 @@
-P# Microsoft.Azure.Arc/AgentConfiguration operation examples
+# Microsoft.Azure.Arc/AgentConfiguration operation examples
 
 Examples in this file are based on test behavior in dsc_resources/tests/azure_arc_agent.tests.ps1.
 

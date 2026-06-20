@@ -25,6 +25,20 @@ $script:PropertyMap = @{
     proxyUrl                   = 'proxy.url'
 }
 
+<#
+.SYNOPSIS
+Finds the azcmagent executable path.
+
+.DESCRIPTION
+Resolves the azcmagent command from PATH and returns the resolved source path.
+
+.INPUTS
+None.
+
+.OUTPUTS
+System.String or System.Management.Automation.Language.NullString
+Path to azcmagent when found; otherwise null.
+#>
 function Find-AzcmAgentCommand {
     $command = Get-Command -Name 'azcmagent' -ErrorAction SilentlyContinue
     if ($null -eq $command) {
@@ -34,6 +48,23 @@ function Find-AzcmAgentCommand {
     return $command.Source
 }
 
+<#
+.SYNOPSIS
+Converts incoming resource JSON into a hashtable.
+
+.DESCRIPTION
+Returns an empty hashtable for empty or whitespace input; otherwise parses JSON
+input into a hashtable used by the resource operations.
+
+.PARAMETER InputObject
+JSON string provided to the resource operation.
+
+.INPUTS
+System.String
+
+.OUTPUTS
+System.Collections.Hashtable
+#>
 function ConvertFrom-ResourceInput {
     param(
         [AllowEmptyString()]
@@ -47,6 +78,23 @@ function ConvertFrom-ResourceInput {
     return $InputObject | ConvertFrom-Json -AsHashtable
 }
 
+<#
+.SYNOPSIS
+Normalizes list-like values to a canonical string array.
+
+.DESCRIPTION
+Accepts strings, collections, or null and returns a trimmed, deduplicated,
+sorted array of non-empty string values.
+
+.PARAMETER Value
+Input value to normalize.
+
+.INPUTS
+System.Object
+
+.OUTPUTS
+System.String[]
+#>
 function ConvertTo-NormalizedStringList {
     param(
         [AllowNull()]
@@ -100,6 +148,23 @@ function ConvertTo-NormalizedStringList {
     return ,$normalizedItems
 }
 
+<#
+.SYNOPSIS
+Converts a value to a normalized boolean.
+
+.DESCRIPTION
+Returns null for null input, returns boolean values unchanged, and attempts
+to parse string values as booleans.
+
+.PARAMETER Value
+Input value to normalize.
+
+.INPUTS
+System.Object
+
+.OUTPUTS
+System.Boolean or $null
+#>
 function ConvertTo-NormalizedBoolean {
     param(
         [AllowNull()]
@@ -123,6 +188,22 @@ function ConvertTo-NormalizedBoolean {
     throw "Invalid boolean value '$candidate'."
 }
 
+<#
+.SYNOPSIS
+Normalizes and validates the config mode value.
+
+.DESCRIPTION
+Converts input to lowercase and validates that it is either monitor or full.
+
+.PARAMETER Value
+Input config mode value.
+
+.INPUTS
+System.Object
+
+.OUTPUTS
+System.String or $null
+#>
 function ConvertTo-NormalizedConfigMode {
     param(
         [AllowNull()]
@@ -141,6 +222,23 @@ function ConvertTo-NormalizedConfigMode {
     return $mode
 }
 
+<#
+.SYNOPSIS
+Converts normalized values into azcmagent argument text.
+
+.DESCRIPTION
+Formats booleans as lowercase text and joins enumerable values as
+comma-separated strings.
+
+.PARAMETER Value
+Value to convert for azcmagent config set.
+
+.INPUTS
+System.Object
+
+.OUTPUTS
+System.String
+#>
 function Join-ConfigValue {
     param(
         [AllowNull()]
@@ -158,6 +256,26 @@ function Join-ConfigValue {
     return [string]$Value
 }
 
+<#
+.SYNOPSIS
+Invokes azcmagent with the provided arguments.
+
+.DESCRIPTION
+Executes azcmagent, captures combined output, validates exit code, and returns
+trimmed text output.
+
+.PARAMETER Arguments
+Argument list passed directly to azcmagent.
+
+.PARAMETER IgnoreExitCode
+Skips non-zero exit code validation when specified.
+
+.INPUTS
+System.String[]
+
+.OUTPUTS
+System.String
+#>
 function Invoke-AzcmAgent {
     param(
         [Parameter(Mandatory = $true)]
@@ -181,6 +299,23 @@ function Invoke-AzcmAgent {
     return $text.Trim()
 }
 
+<#
+.SYNOPSIS
+Builds validated desired state from input properties.
+
+.DESCRIPTION
+Validates supported keys and normalizes values to the internal desired-state
+representation used by Test and Set operations.
+
+.PARAMETER InputObject
+Input hashtable containing desired property values.
+
+.INPUTS
+System.Collections.Hashtable
+
+.OUTPUTS
+System.Collections.Hashtable
+#>
 function Get-DesiredState {
     param(
         [hashtable]$InputObject
@@ -222,6 +357,23 @@ function Get-DesiredState {
     return $desiredState
 }
 
+<#
+.SYNOPSIS
+Reads a single Azure Arc agent configuration property.
+
+.DESCRIPTION
+Invokes azcmagent config get for the requested property and returns null for
+empty responses.
+
+.PARAMETER PropertyName
+Azcmagent configuration property name.
+
+.INPUTS
+System.String
+
+.OUTPUTS
+System.String or $null
+#>
 function Get-ConfigPropertyValue {
     param(
         [Parameter(Mandatory = $true)]
@@ -236,6 +388,20 @@ function Get-ConfigPropertyValue {
     return $rawValue
 }
 
+<#
+.SYNOPSIS
+Retrieves current state from the Azure Arc agent.
+
+.DESCRIPTION
+Returns a state object with normalized values for all resource properties. If
+azcmagent is not available, returns defaults with agentInstalled set to false.
+
+.INPUTS
+None.
+
+.OUTPUTS
+System.Collections.Hashtable
+#>
 function Get-CurrentState {
     $state = @{
         incomingConnectionsEnabled = $null
@@ -264,6 +430,25 @@ function Get-CurrentState {
     return $state
 }
 
+<#
+.SYNOPSIS
+Compares two list-like values for logical equality.
+
+.DESCRIPTION
+Normalizes both values as string arrays and compares size and content.
+
+.PARAMETER Left
+First value to compare.
+
+.PARAMETER Right
+Second value to compare.
+
+.INPUTS
+System.Object
+
+.OUTPUTS
+System.Boolean
+#>
 function Test-StringListEquality {
     param(
         [AllowNull()]
@@ -283,6 +468,26 @@ function Test-StringListEquality {
     return $null -eq (Compare-Object -ReferenceObject $leftValues -DifferenceObject $rightValues)
 }
 
+<#
+.SYNOPSIS
+Determines whether current state matches desired state.
+
+.DESCRIPTION
+Compares desired keys against current state and performs normalized list
+comparison for allowlist and blocklist properties.
+
+.PARAMETER CurrentState
+Current resource state.
+
+.PARAMETER DesiredState
+Desired resource state.
+
+.INPUTS
+System.Collections.Hashtable
+
+.OUTPUTS
+System.Boolean
+#>
 function Test-InDesiredState {
     param(
         [hashtable]$CurrentState,
@@ -310,6 +515,26 @@ function Test-InDesiredState {
     return $true
 }
 
+<#
+.SYNOPSIS
+Sets a single Azure Arc agent configuration property.
+
+.DESCRIPTION
+Converts the provided value into azcmagent argument text and invokes
+azcmagent config set.
+
+.PARAMETER PropertyName
+Azcmagent configuration property name.
+
+.PARAMETER Value
+Value to set for the property.
+
+.INPUTS
+System.String, System.Object
+
+.OUTPUTS
+None.
+#>
 function Set-ConfigPropertyValue {
     param(
         [Parameter(Mandatory = $true)]
@@ -324,6 +549,27 @@ function Set-ConfigPropertyValue {
     $null = Invoke-AzcmAgent -Arguments @('config', 'set', $PropertyName, $valueText)
 }
 
+<#
+.SYNOPSIS
+Applies desired state differences to Azure Arc agent settings.
+
+.DESCRIPTION
+Compares current and desired state and invokes azcmagent config set only for
+properties that require updates.
+
+.PARAMETER CurrentState
+Current resource state.
+
+.PARAMETER DesiredState
+Desired resource state.
+
+.INPUTS
+System.Collections.Hashtable
+
+.OUTPUTS
+System.Collections.Hashtable
+Updated current state after changes are applied.
+#>
 function Set-DesiredState {
     param(
         [hashtable]$CurrentState,
@@ -361,6 +607,20 @@ function Set-DesiredState {
     return Get-CurrentState
 }
 
+<#
+.SYNOPSIS
+Builds exportable state from current configuration.
+
+.DESCRIPTION
+Returns non-null writable properties suitable for export. Returns an empty
+hashtable when the agent is not installed.
+
+.INPUTS
+None.
+
+.OUTPUTS
+System.Collections.Hashtable
+#>
 function Get-ExportState {
     $currentState = Get-CurrentState
 
