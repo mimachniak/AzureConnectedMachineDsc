@@ -1,0 +1,11 @@
+{
+    "Name": "azure_arc_agent",
+    "Kind": "Resource",
+    "SupportedPlatformOS": "Windows",
+    "CopyFiles": {
+        "Windows": [
+            "azure_arc_agent.resource.ps1",
+            "azure_arc_agent.dsc.resource.json"
+        ]
+    }
+}
